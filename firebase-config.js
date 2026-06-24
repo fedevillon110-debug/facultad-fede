@@ -42,19 +42,37 @@ function getOrCreateUserCode() {
     code = "default";
     try {
       localStorage.setItem(storageKey, code);
-    } catch (e) {
-      // Ignorar si el almacenamiento no está disponible
-    }
+    } catch (e) {}
   }
 
-  return code.trim();
+  const normalized = (code || "default").trim() || "default";
+  if (normalized !== code) {
+    try {
+      localStorage.setItem(storageKey, normalized);
+    } catch (e) {}
+  }
+
+  return normalized;
 }
 
 function setUserCode(code) {
   const clean = (code || "default").trim() || "default";
+  const previous = getOrCreateUserCode();
+  if (previous !== clean) {
+    try {
+      const prefix = `mifacultad_${previous}_`;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key || !key.startsWith(prefix)) continue;
+        const suffix = key.slice(prefix.length);
+        localStorage.setItem(`mifacultad_${clean}_${suffix}`, localStorage.getItem(key));
+      }
+    } catch (e) {}
+  }
   try {
     localStorage.setItem("mifacultad_user_code", clean);
   } catch (e) {}
+  window.currentUserCode = clean;
   return clean;
 }
 
@@ -193,5 +211,9 @@ window.uploadFile = async function (file) {
 
 window.getUserCode = getOrCreateUserCode;
 window.setUserCode = setUserCode;
+window.currentUserCode = getOrCreateUserCode();
+if (document.getElementById("legajoValue")) {
+  document.getElementById("legajoValue").textContent = window.currentUserCode;
+}
 window.dispatchEvent(new Event("storage-ready"));
 
