@@ -463,6 +463,10 @@
   .event-row:hover .del-btn{ opacity:1; }
   .event-row .del-btn:hover{ color:var(--c-atras); }
 
+  /* Visual feedback when an item is being deleted */
+  .deleting{ opacity:0.6; transform:translateX(-6px); transition:all .22s ease; }
+  .deleting .del-btn{ color:var(--c-atras) !important; transform:scale(1.08); }
+
   .doc-row{
     display:flex;
     align-items:center;
@@ -480,6 +484,17 @@
   .doc-row .del-btn{ color:var(--text-faint); cursor:pointer; flex:none; font-size:15px; opacity:0; transition:opacity .1s; }
   .doc-row:hover .del-btn{ opacity:1; }
   .doc-row .del-btn:hover{ color:var(--c-atras); }
+
+  /* Mobile / small screens adjustments */
+  @media (max-width:900px){
+    #app{ flex-direction:column; }
+    #sidebar{ width:100%; min-width:0; order:0; max-height:32vh; overflow:auto; }
+    #main{ order:1; height:auto; }
+    #topbar{ padding:10px 14px; }
+    #content{ padding:16px; }
+    .materias-grid{ grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); }
+    .modal-box{ width:92vw; }
+  }
 
   .empty-hint{ font-size:12.5px; color:var(--text-faint); padding:8px 0; }
 
@@ -1149,18 +1164,31 @@ function renderDetalle(){
   });
   document.getElementById("addEventBtn").addEventListener("click", ()=> openEventModal(m.id));
   document.getElementById("addDocBtn").addEventListener("click", ()=> openDocModal(m.id));
-  content.querySelectorAll("[data-evid]").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      eventos = eventos.filter(e=>e.id !== el.dataset.evid);
+  function animateAndRemove(rowEl, cb, msg){
+    if(!rowEl){ cb(); scheduleSave(); renderDetalle(); if(msg) showToast(msg); return; }
+    rowEl.classList.add('deleting');
+    const delIcon = rowEl.querySelector('.del-btn');
+    if(delIcon) delIcon.style.color = getComputedStyle(document.documentElement).getPropertyValue('--c-atras') || 'red';
+    setTimeout(()=>{
+      cb();
       scheduleSave();
       renderDetalle();
+      if(msg) showToast(msg);
+    }, 280);
+  }
+
+  content.querySelectorAll("[data-evid]").forEach(el=>{
+    el.addEventListener("click", (ev)=>{
+      ev.stopPropagation();
+      const row = el.closest('.event-row');
+      animateAndRemove(row, ()=>{ eventos = eventos.filter(e=>e.id !== el.dataset.evid); }, 'Fecha eliminada');
     });
   });
   content.querySelectorAll("[data-docid]").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      documentos = documentos.filter(d=>d.id !== el.dataset.docid);
-      scheduleSave();
-      renderDetalle();
+    el.addEventListener("click", (ev)=>{
+      ev.stopPropagation();
+      const row = el.closest('.doc-row');
+      animateAndRemove(row, ()=>{ documentos = documentos.filter(d=>d.id !== el.dataset.docid); }, 'Documento eliminado');
     });
   });
 }
@@ -1176,14 +1204,19 @@ function confirmDeleteMateria(id){
   `);
   document.getElementById("cancelDel").addEventListener("click", closeModal);
   document.getElementById("confirmDel").addEventListener("click", ()=>{
-    materias = materias.filter(m=>m.id !== id);
-    eventos = eventos.filter(e=>e.materiaId !== id);
-    documentos = documentos.filter(d=>d.materiaId !== id);
-    scheduleSave();
-    closeModal();
-    view = "materias"; activeMateriaId = null;
-    renderAll();
-    showToast("Materia eliminada");
+    // add visual feedback (red trash) on the sidebar or grid card if present
+    const sideCard = document.querySelector(`#sidebar-tree [data-mid="${id}"]`) || document.querySelector(`.materia-card[data-mid="${id}"]`);
+    if(sideCard) sideCard.classList.add('deleting');
+    setTimeout(()=>{
+      materias = materias.filter(m=>m.id !== id);
+      eventos = eventos.filter(e=>e.materiaId !== id);
+      documentos = documentos.filter(d=>d.materiaId !== id);
+      scheduleSave();
+      closeModal();
+      view = "materias"; activeMateriaId = null;
+      renderAll();
+      showToast("Materia eliminada");
+    }, 320);
   });
 }
 
