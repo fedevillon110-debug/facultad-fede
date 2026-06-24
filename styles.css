@@ -1,0 +1,50 @@
+/* Small supplemental styles: mobile sidebar (hamburger), overlays and accent tweaks */
+:root{ --accent: #6fb3e6; }
+.hamburger{ display:none; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; background:var(--panel-elev); border:1px solid var(--border); color:var(--text-dim); cursor:pointer; }
+.hamburger i{ font-size:16px; }
+
+/* Ensure tabler icons inherit app color (fixes black icons issue) */
+.ti, .ti *{ color: var(--text) !important; }
+
+/* Chevron / icon tweaks for better contrast */
+.chev{ color:var(--text-faint); font-size:14px; }
+.tree-year-head.open .chev, .tree-period-head.open .chev{ color:var(--text); }
+.tree-year-head:hover .chev, .tree-period-head:hover .chev{ color:var(--text); }
+
+/* Calendar nav icons larger and clearer */
+.cal-nav i{ font-size:16px; }
+
+/* Styled file input */
+.file-input-wrap{ display:flex; gap:8px; align-items:center; }
+.file-btn{
+  display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:8px; background:var(--panel-elev); border:1px solid var(--border); color:var(--text); cursor:pointer;
+}
+.file-name{ font-size:13px; color:var(--text-faint); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.file-input-hidden{ display:none; }
+
+
+/* Sidebar slide-in on small screens */
+@media (max-width:900px){
+  .hamburger{ display:inline-flex; }
+  #sidebar{ position:fixed; left:-100%; top:0; height:100%; width:280px; z-index:60; box-shadow: 4px 0 18px rgba(0,0,0,0.5); transition:left .26s ease; }
+  body.show-sidebar #sidebar{ left:0; }
+  .sidebar-overlay{ display:none; }
+  body.show-sidebar .sidebar-overlay{ display:block; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:55; }
+  #topbar{ padding:12px 14px; gap:10px; flex-wrap:wrap; }
+  #content{ padding:16px; }
+  .cal-cell{ min-height:72px; }
+  .materias-grid{ grid-template-columns:1fr; }
+}
+
+/* Calendar add button accent */
+#calAdd{ border-color:var(--accent); color:var(--accent); }
+#calAdd:hover{ background:rgba(111,179,230,0.08); color:var(--text); }
+
+/* Slightly brighter trash color when hovering on deleting */
+.del-btn:hover{ color:var(--c-atras); }
+
+/* Sidebar tree scroll improvements on mobile */
+#sidebar-tree{ -webkit-overflow-scrolling:touch; }
+
+/* Fallback para iconos si no cargan las fuentes externas */
+.icon-fallback{ font-style:normal; font-family:Segoe UI, Inter, Arial, sans-serif; line-height:1; }
