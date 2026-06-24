@@ -1304,10 +1304,9 @@ function renderDetalle(){
   document.getElementById("addEventBtn").addEventListener("click", ()=> openEventModal(m.id));
   document.getElementById("addDocBtn").addEventListener("click", ()=> openDocModal(m.id));
   document.getElementById("mergeDocsBtn").addEventListener("click", ()=> openMergeModal(m.id));
-  content.querySelectorAll('.doc-name a').forEach(link=>{
-    link.addEventListener('click', (ev)=>{
-      ev.preventDefault();
-      openDocumentUrl(link.getAttribute('href'), link.textContent.trim() + '.pdf');
+  content.querySelectorAll('.doc-link-btn').forEach(button=>{
+    button.addEventListener('click', ()=>{
+      openDocumentUrl(button.getAttribute('data-doc-url'), button.textContent.trim() + '.pdf');
     });
   });
   function animateAndRemove(rowEl, cb, msg){
