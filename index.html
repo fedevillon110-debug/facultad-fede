@@ -98,6 +98,38 @@
   .sync-pill i{ font-size:12px; }
   .sync-pill.ok{ color:var(--c-promo); }
   .sync-pill.err{ color:var(--c-atras); }
+  .sidebar-meta{ margin-top:10px; }
+  .sidebar-close-btn{
+    display:none;
+    position:absolute;
+    right:12px;
+    top:12px;
+    width:32px;
+    height:32px;
+    border:none;
+    border-radius:50%;
+    background:var(--panel-elev);
+    color:var(--text-dim);
+    cursor:pointer;
+  }
+  .sidebar-close-btn:hover{ background:var(--panel-elev-2); color:var(--text); }
+  .sidebar-legajo-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    border:1px solid var(--border);
+    background:var(--panel-elev);
+    color:var(--text-dim);
+    border-radius:999px;
+    padding:7px 10px;
+    font-size:11.5px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .sidebar-legajo-btn:hover{ background:var(--panel-elev-2); color:var(--text); }
+  .sidebar-legajo-label{ text-transform:uppercase; letter-spacing:.04em; }
 
   #sidebar-tree{
     flex:1;
@@ -586,8 +618,15 @@
 
   <div id="sidebar">
     <div class="sidebar-header">
+      <button class="sidebar-close-btn" id="sidebarCloseBtn" type="button" title="Cerrar menú">✕</button>
       <p class="sidebar-title">Ingeniería en Sistemas</p>
       <p class="sidebar-sub">Plan 2023 · FRCU</p>
+      <div class="sidebar-meta">
+        <button class="sidebar-legajo-btn" id="legajoEditBtn" type="button">
+          <span class="sidebar-legajo-label">Legajo</span>
+          <span id="legajoValue">—</span>
+        </button>
+      </div>
       <span class="sync-pill" id="syncPill"><i class="ti ti-cloud"></i><span>Sincronizando…</span></span>
     </div>
     <div id="sidebar-tree"></div>
@@ -615,11 +654,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
-window.prompt = function () { return "default"; };
-window.confirm = window.confirm || function () { return true; };
-</script>
-<script src="firebase-config.js?v=20260624.2"></script>
+<script type="module" src="firebase-config.js?v=20260624.3"></script>
 <script>
 const PLAN_SEED = [
   { id: "K2311", nombre: "Analisis Matematico I", anio: 1, periodo: "2do Cuat" },
@@ -944,6 +979,7 @@ function renderSidebar(){
     el.addEventListener("click", ()=>{
       activeMateriaId = el.dataset.mid;
       view = "detalle";
+      if(window.innerWidth <= 900) toggleSidebar(false);
       renderAll();
     });
   });
@@ -1536,18 +1572,52 @@ document.getElementById("btnAddMateria").addEventListener("click", openAddMateri
 // hamburger / sidebar overlay handlers
 const hamburger = document.getElementById('hamburgerBtn');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
+const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 function toggleSidebar(show){
   if(show) document.body.classList.add('show-sidebar');
   else document.body.classList.remove('show-sidebar');
-  sidebarOverlay.style.display = document.body.classList.contains('show-sidebar') ? 'block' : 'none';
+  if(sidebarOverlay){ sidebarOverlay.style.display = document.body.classList.contains('show-sidebar') ? 'block' : 'none'; }
 }
 if(hamburger){ hamburger.addEventListener('click', ()=> toggleSidebar(true)); }
 if(sidebarOverlay){ sidebarOverlay.addEventListener('click', ()=> toggleSidebar(false)); }
+if(sidebarCloseBtn){ sidebarCloseBtn.addEventListener('click', ()=> toggleSidebar(false)); }
+
+function updateLegajoLabel(){
+  const el = document.getElementById('legajoValue');
+  if(el && window.getUserCode){ el.textContent = window.getUserCode(); }
+}
+
+function openLegajoModal(){
+  const actual = window.getUserCode ? window.getUserCode() : 'default';
+  openModal(`
+    <p class="modal-title">Cambiar legajo</p>
+    <div class="form-field">
+      <label>Legajo / código</label>
+      <input type="text" id="fLegajo" value="${actual}" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelLegajo">Cancelar</button>
+      <button class="btn primary" id="confirmLegajo">Guardar</button>
+    </div>
+  `);
+  document.getElementById('cancelLegajo').addEventListener('click', closeModal);
+  document.getElementById('confirmLegajo').addEventListener('click', ()=>{
+    const value = document.getElementById('fLegajo').value.trim() || 'default';
+    if(window.setUserCode){ window.setUserCode(value); }
+    updateLegajoLabel();
+    closeModal();
+    showToast('Legajo actualizado');
+    loadAll().then(()=>renderAll()).catch(()=>{});
+  });
+}
+
+document.getElementById('legajoEditBtn').addEventListener('click', openLegajoModal);
 
 async function startApp(){
   setSyncPill("saving");
   await loadAll();
   setSyncPill("ok");
+  updateLegajoLabel();
   renderAll();
 }
 
