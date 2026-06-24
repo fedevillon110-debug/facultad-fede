@@ -1128,6 +1128,12 @@ function renderMateriasGrid(){
 }
 
 /* ===================== Render: detalle de materia ===================== */
+function openDocumentUrl(url){
+  if(!url) return;
+  const resolved = /^https?:\/\//i.test(url) ? url : "https://" + url;
+  window.location.assign(resolved);
+}
+
 function renderDetalle(){
   const content = document.getElementById("content");
   const m = materiaById(activeMateriaId);
@@ -1168,7 +1174,7 @@ function renderDetalle(){
       docsHtml += `<div class="doc-row">
         <i class="ti ti-file-text doc-icon"></i>
         <div class="doc-info">
-          <div class="doc-name"><a href="${d.url}" target="_blank" rel="noopener">${d.nombre}</a></div>
+          <div class="doc-name"><a href="${d.url}" data-doc-url="${d.url}">${d.nombre}</a></div>
           <div class="doc-cat">${d.categoria}</div>
         </div>
         <i class="ti ti-trash del-btn" data-docid="${d.id}"></i>
@@ -1226,6 +1232,12 @@ function renderDetalle(){
   document.getElementById("addEventBtn").addEventListener("click", ()=> openEventModal(m.id));
   document.getElementById("addDocBtn").addEventListener("click", ()=> openDocModal(m.id));
   document.getElementById("mergeDocsBtn").addEventListener("click", ()=> openMergeModal(m.id));
+  content.querySelectorAll('.doc-name a').forEach(link=>{
+    link.addEventListener('click', (ev)=>{
+      ev.preventDefault();
+      openDocumentUrl(link.getAttribute('href'));
+    });
+  });
   function animateAndRemove(rowEl, cb, msg){
     if(!rowEl){ cb(); scheduleSave(); renderDetalle(); if(msg) showToast(msg); return; }
     rowEl.classList.add('deleting');
