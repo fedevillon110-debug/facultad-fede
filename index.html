@@ -1128,10 +1128,28 @@ function renderMateriasGrid(){
 }
 
 /* ===================== Render: detalle de materia ===================== */
-function openDocumentUrl(url){
+function downloadDocument(url, fileName){
+  if(!url) return;
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName || 'documento.pdf';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function openDocumentUrl(url, fileName){
   if(!url) return;
   const resolved = /^https?:\/\//i.test(url) ? url : "https://" + url;
-  window.open(resolved, '_blank', 'noopener,noreferrer');
+  if (resolved.startsWith('data:application/pdf')) {
+    downloadDocument(resolved, fileName || 'documento.pdf');
+    return;
+  }
+  try {
+    window.open(resolved, '_blank', 'noopener,noreferrer');
+  } catch (e) {
+    downloadDocument(resolved, fileName || 'documento.pdf');
+  }
 }
 
 function renderDetalle(){
@@ -1236,7 +1254,7 @@ function renderDetalle(){
   content.querySelectorAll('.doc-name a').forEach(link=>{
     link.addEventListener('click', (ev)=>{
       ev.preventDefault();
-      openDocumentUrl(link.getAttribute('href'));
+      openDocumentUrl(link.getAttribute('href'), link.textContent.trim() + '.pdf');
     });
   });
   function animateAndRemove(rowEl, cb, msg){
