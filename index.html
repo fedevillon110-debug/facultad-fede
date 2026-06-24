@@ -1183,6 +1183,18 @@ async function downloadDocument(url, fileName, dataUrl){
     const response = await fetch(resolved, { cache: 'no-store' });
     if(!response.ok) throw new Error('No se pudo descargar');
     const blob = await response.blob();
+    
+    if (window.showSaveFilePicker) {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName || 'documento.pdf',
+        types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return;
+    }
+
     const blobUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = blobUrl;
