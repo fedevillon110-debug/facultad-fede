@@ -1166,21 +1166,36 @@ function renderMateriasGrid(){
 }
 
 /* ===================== Render: detalle de materia ===================== */
-function downloadDocument(url, fileName){
+async function downloadDocument(url, fileName){
   if(!url) return;
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName || 'documento.pdf';
-  link.target = '_self';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const resolved = /^https?:\/\//i.test(url) ? url : (url.startsWith('data:') ? url : "https://" + url);
+  try {
+    const response = await fetch(resolved, { cache: 'no-store' });
+    if(!response.ok) throw new Error('No se pudo descargar');
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = fileName || 'documento.pdf';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(()=> URL.revokeObjectURL(blobUrl), 1500);
+  } catch (e) {
+    const fallbackLink = document.createElement('a');
+    fallbackLink.href = resolved;
+    fallbackLink.download = fileName || 'documento.pdf';
+    fallbackLink.style.display = 'none';
+    document.body.appendChild(fallbackLink);
+    fallbackLink.click();
+    document.body.removeChild(fallbackLink);
+  }
 }
 
 function openDocumentUrl(url, fileName){
   if(!url) return;
-  const resolved = /^https?:\/\//i.test(url) ? url : "https://" + url;
-  downloadDocument(resolved, fileName || 'documento.pdf');
+  return downloadDocument(url, fileName || 'documento.pdf');
 }
 
 function renderDetalle(){
