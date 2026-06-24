@@ -1255,7 +1255,10 @@ function renderDetalle(){
           <div class="doc-name"><button type="button" class="doc-link-btn" data-doc-url="${d.url || ''}" data-doc-data-url="${d.dataUrl || ''}" style="background:none;border:none;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;">${d.nombre}</button></div>
           <div class="doc-cat">${d.categoria}</div>
         </div>
-        <i class="ti ti-trash del-btn" data-docid="${d.id}"></i>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button type="button" class="doc-link-btn btn" data-doc-url="${d.url || ''}" data-doc-data-url="${d.dataUrl || ''}" style="padding:6px 10px;font-size:12px;">Descargar</button>
+          <i class="ti ti-trash del-btn" data-docid="${d.id}"></i>
+        </div>
       </div>`;
     });
   }
