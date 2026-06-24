@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Facultad — Ingeniería en Sistemas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.1.0/iconfont/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Facultad">
+<meta name="theme-color" content="#15151a">
+<style>
+  :root{
+    --bg: #15151a;
+    --panel: #1c1c22;
+    --panel-elev: #26262e;
+    --panel-elev-2: #2f2f38;
+    --border: #34343e;
+    --border-soft: #2a2a32;
+    --text: #eeeef0;
+    --text-dim: #9a9aa4;
+    --text-faint: #6a6a74;
+
+    --c-curso: #9bc4e8;
+    --c-curso-bg: #233042;
+    --c-promo: #a8d9b8;
+    --c-promo-bg: #213227;
+    --c-pend: #e8b894;
+    --c-pend-bg: #382c20;
+    --c-atras: #dd9bb0;
+    --c-atras-bg: #392631;
+    --c-neutral: #8a8a94;
+    --c-neutral-bg: #26262e;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+    height:100vh;
+    overflow:hidden;
+  }
+  .tabular{ font-variant-numeric: tabular-nums; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+  ::-webkit-scrollbar-thumb{ background:var(--border); border-radius:4px; }
+  ::-webkit-scrollbar-thumb:hover{ background:var(--border-soft); }
+
+  #app{ display:flex; height:100vh; }
+
+  /* ===== Sidebar ===== */
+  #sidebar{
+    width:280px;
+    min-width:280px;
+    background:var(--panel);
+    border-right:1px solid var(--border-soft);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  .sidebar-header{
+    padding:18px 16px 14px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .sidebar-title{
+    font-size:15px;
+    font-weight:600;
+    margin:0 0 2px;
+    letter-spacing:-0.01em;
+  }
+  .sidebar-sub{
+    font-size:12px;
+    color:var(--text-faint);
+    margin:0;
+  }
+  .sync-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:11px;
+    color:var(--text-faint);
+    margin-top:8px;
+    padding:3px 8px;
+    background:var(--panel-elev);
+    border-radius:20px;
+  }
+  .sync-pill i{ font-size:12px; }
+  .sync-pill.ok{ color:var(--c-promo); }
+  .sync-pill.err{ color:var(--c-atras); }
+
+  #sidebar-tree{
+    flex:1;
+    overflow-y:auto;
+    padding:10px 8px 16px;
+  }
+  .tree-year{ margin-bottom:2px; }
+  .tree-year-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 10px;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    user-select:none;
+    font-weight:500;
+    font-size:13px;
+  }
+  .tree-year-head:hover{ background:var(--panel-elev); }
+  .tree-year-head .chev{
+    font-size:13px;
+    color:var(--text-faint);
+    transition:transform .15s ease;
+    width:14px;
+  }
+  .tree-year-head.open .chev{ transform:rotate(90deg); }
+  .tree-year-head .ring-mini{ margin-left:auto; }
+
+  .tree-period{ margin-left:14px; }
+  .tree-period-head{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    padding:7px 10px;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    user-select:none;
+    font-size:12.5px;
+    color:var(--text-dim);
+  }
+  .tree-period-head:hover{ background:var(--panel-elev); }
+  .tree-period-head .chev{
+    font-size:12px;
+    color:var(--text-faint);
+    transition:transform .15s ease;
+    width:12px;
+  }
+  .tree-period-head.open .chev{ transform:rotate(90deg); }
+
+  .tree-materias{ margin-left:18px; }
+  .tree-materia{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 10px;
+    border-radius:var(--radius-sm);
+    cursor:pointer;
+    font-size:12.5px;
+    color:var(--text-dim);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .tree-materia:hover{ background:var(--panel-elev); color:var(--text); }
+  .tree-materia.active{ background:var(--panel-elev-2); color:var(--text); }
+  .tree-materia .dot{
+    width:7px; height:7px; border-radius:50%;
+    flex:none;
+  }
+  .tree-materia .nm{ overflow:hidden; text-overflow:ellipsis; }
+
+  .sidebar-footer{
+    padding:12px 16px;
+    border-top:1px solid var(--border-soft);
+  }
+  .btn-add-materia{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:9px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--border);
+    background:var(--panel-elev);
+    color:var(--text-dim);
+    font-size:12.5px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-add-materia:hover{ background:var(--panel-elev-2); color:var(--text); }
+
+  /* ===== Main ===== */
+  #main{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 28px;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .segmented{
+    display:flex;
+    background:var(--panel-elev);
+    border-radius:10px;
+    padding:3px;
+    gap:2px;
+  }
+  .segmented button{
+    border:none;
+    background:transparent;
+    color:var(--text-dim);
+    font-family:inherit;
+    font-size:13px;
+    font-weight:500;
+    padding:7px 16px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .segmented button.active{
+    background:var(--panel-elev-2);
+    color:var(--text);
+  }
+  .overall-ring-wrap{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .overall-label{
+    font-size:12px;
+    color:var(--text-faint);
+    text-align:right;
+    line-height:1.4;
+  }
+  .overall-label b{ color:var(--text); font-weight:600; }
+
+  #content{
+    flex:1;
+    overflow-y:auto;
+    padding:28px;
+  }
+
+  /* ===== Cards / generic ===== */
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-lg);
+    padding:18px 20px;
+  }
+  .section-title{
+    font-size:13px;
+    font-weight:600;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    margin:0 0 12px;
+  }
+
+  /* ===== Calendar view ===== */
+  .cal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .cal-month-label{
+    font-size:20px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .cal-nav{ display:flex; gap:6px; }
+  .cal-nav button{
+    width:32px; height:32px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--panel-elev);
+    color:var(--text-dim);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cal-nav button:hover{ background:var(--panel-elev-2); color:var(--text); }
+  .cal-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .cal-dow{
+    font-size:11px;
+    color:var(--text-faint);
+    text-align:center;
+    padding-bottom:6px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .cal-cell{
+    min-height:88px;
+    border-radius:var(--radius-sm);
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    padding:6px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .cal-cell:hover{ border-color:var(--border); }
+  .cal-cell.empty{ background:transparent; border-color:transparent; cursor:default; }
+  .cal-cell.today{ border-color:var(--c-curso); }
+  .cal-daynum{ font-size:12px; color:var(--text-faint); }
+  .cal-cell.today .cal-daynum{ color:var(--c-curso); font-weight:600; }
+  .cal-event{
+    font-size:10.5px;
+    padding:2px 5px;
+    border-radius:5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    line-height:1.5;
+  }
+  .cal-event.tipo-parcial{ background:var(--c-curso-bg); color:var(--c-curso); }
+  .cal-event.tipo-final{ background:var(--c-atras-bg); color:var(--c-atras); }
+  .cal-event.tipo-entrega{ background:var(--c-pend-bg); color:var(--c-pend); }
+  .cal-event.tipo-otro{ background:var(--c-neutral-bg); color:var(--c-neutral); }
+
+  .upcoming-list{ display:flex; flex-direction:column; gap:8px; }
+  .upcoming-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px;
+    background:var(--panel-elev);
+    border-radius:var(--radius-sm);
+  }
+  .upcoming-date{
+    width:46px;
+    text-align:center;
+    flex:none;
+  }
+  .upcoming-date .d{ font-size:17px; font-weight:600; line-height:1.1; }
+  .upcoming-date .m{ font-size:10px; color:var(--text-faint); text-transform:uppercase; }
+  .upcoming-info{ flex:1; min-width:0; }
+  .upcoming-info .t{ font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .upcoming-info .s{ font-size:11.5px; color:var(--text-faint); }
+  .upcoming-tag{
+    font-size:10.5px;
+    padding:3px 8px;
+    border-radius:6px;
+    flex:none;
+  }
+
+  /* ===== Materias grid view ===== */
+  .materias-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:12px;
+  }
+  .materia-card{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:var(--radius-lg);
+    padding:16px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .materia-card:hover{ border-color:var(--border); }
+  .materia-card-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .materia-card-name{ font-size:14px; font-weight:500; line-height:1.35; }
+  .materia-card-meta{ font-size:11.5px; color:var(--text-faint); }
+  .status-badge{
+    font-size:10.5px;
+    font-weight:500;
+    padding:4px 9px;
+    border-radius:20px;
+    white-space:nowrap;
+    flex:none;
+  }
+
+  /* ===== Materia detail view ===== */
+  .materia-detail-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    margin-bottom:22px;
+    gap:16px;
+  }
+  .back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    color:var(--text-faint);
+    font-size:12.5px;
+    cursor:pointer;
+    margin-bottom:10px;
+  }
+  .back-btn:hover{ color:var(--text-dim); }
+  .materia-detail-name{
+    font-size:22px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0 0 4px;
+  }
+  .materia-detail-meta{
+    font-size:13px;
+    color:var(--text-faint);
+  }
+  .status-select-wrap{ display:flex; gap:6px; flex-wrap:wrap; }
+  .status-opt{
+    font-size:12px;
+    font-weight:500;
+    padding:7px 13px;
+    border-radius:20px;
+    cursor:pointer;
+    border:1px solid var(--border);
+    background:var(--panel-elev);
+    color:var(--text-dim);
+  }
+  .status-opt:hover{ background:var(--panel-elev-2); }
+  .status-opt.sel-curso.active{ background:var(--c-curso-bg); color:var(--c-curso); border-color:var(--c-curso-bg); }
+  .status-opt.sel-promo.active{ background:var(--c-promo-bg); color:var(--c-promo); border-color:var(--c-promo-bg); }
+  .status-opt.sel-pend.active{ background:var(--c-pend-bg); color:var(--c-pend); border-color:var(--c-pend-bg); }
+  .status-opt.sel-atras.active{ background:var(--c-atras-bg); color:var(--c-atras); border-color:var(--c-atras-bg); }
+  .status-opt.sel-none.active{ background:var(--c-neutral-bg); color:var(--c-neutral); border-color:var(--c-neutral-bg); }
+
+  .detail-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    align-items:start;
+  }
+  @media (max-width:900px){ .detail-grid{ grid-template-columns:1fr; } }
+
+  .row-between{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .icon-btn{
+    width:28px; height:28px;
+    border-radius:7px;
+    border:1px solid var(--border);
+    background:var(--panel-elev);
+    color:var(--text-dim);
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .icon-btn:hover{ background:var(--panel-elev-2); color:var(--text); }
+
+  .event-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .event-row:last-child{ border-bottom:none; }
+  .event-row .tag-dot{ width:8px; height:8px; border-radius:50%; flex:none; }
+  .event-row .ev-name{ font-size:13px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .event-row .ev-date{ font-size:12px; color:var(--text-faint); flex:none; }
+  .event-row .del-btn{ color:var(--text-faint); cursor:pointer; flex:none; font-size:15px; opacity:0; transition:opacity .1s; }
+  .event-row:hover .del-btn{ opacity:1; }
+  .event-row .del-btn:hover{ color:var(--c-atras); }
+
+  .doc-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 0;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .doc-row:last-child{ border-bottom:none; }
+  .doc-row .doc-icon{ font-size:16px; color:var(--text-faint); flex:none; }
+  .doc-row .doc-info{ flex:1; min-width:0; }
+  .doc-row .doc-name{ font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .doc-row .doc-cat{ font-size:11px; color:var(--text-faint); }
+  .doc-row a{ color:var(--c-curso); text-decoration:none; }
+  .doc-row a:hover{ text-decoration:underline; }
+  .doc-row .del-btn{ color:var(--text-faint); cursor:pointer; flex:none; font-size:15px; opacity:0; transition:opacity .1s; }
+  .doc-row:hover .del-btn{ opacity:1; }
+  .doc-row .del-btn:hover{ color:var(--c-atras); }
+
+  .empty-hint{ font-size:12.5px; color:var(--text-faint); padding:8px 0; }
+
+  /* ===== Forms / modal ===== */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,.55);
+    display:flex; align-items:center; justify-content:center;
+    z-index:50;
+  }
+  .modal-box{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    padding:22px;
+    width:380px;
+    max-width:92vw;
+  }
+  .modal-title{ font-size:15px; font-weight:600; margin:0 0 16px; }
+  .form-field{ margin-bottom:13px; }
+  .form-field label{
+    display:block;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-bottom:5px;
+  }
+  .form-field input,.form-field select,.form-field textarea{
+    width:100%;
+    background:var(--panel-elev);
+    border:1px solid var(--border);
+    border-radius:8px;
+    color:var(--text);
+    padding:8px 10px;
+    font-size:13px;
+    font-family:inherit;
+  }
+  .form-field input:focus,.form-field select:focus,.form-field textarea:focus{
+    outline:none; border-color:var(--c-curso);
+  }
+  .modal-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:18px; }
+  .btn{
+    padding:8px 16px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    border:1px solid var(--border);
+    background:var(--panel-elev);
+    color:var(--text-dim);
+    font-family:inherit;
+  }
+  .btn:hover{ background:var(--panel-elev-2); color:var(--text); }
+  .btn.primary{ background:var(--c-curso); color:#142133; border-color:var(--c-curso); }
+  .btn.primary:hover{ background:#86b8e0; }
+  .btn.danger-text{ color:var(--c-atras); border-color:transparent; background:transparent; }
+
+  .toast{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--panel-elev-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:9px 18px;
+    border-radius:20px;
+    font-size:12.5px;
+    z-index:100;
+    opacity:0;
+    transition:opacity .2s ease;
+    pointer-events:none;
+  }
+  .toast.show{ opacity:1; }
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--text-faint);
+  }
+  .empty-state i{ font-size:32px; margin-bottom:10px; display:block; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <p class="sidebar-title">Ingeniería en Sistemas</p>
+      <p class="sidebar-sub">Plan 2023 · FRCU</p>
+      <span class="sync-pill" id="syncPill"><i class="ti ti-cloud"></i><span>Sincronizando…</span></span>
+    </div>
+    <div id="sidebar-tree"></div>
+    <div class="sidebar-footer">
+      <button class="btn-add-materia" id="btnAddMateria"><i class="ti ti-plus"></i> Agregar materia</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="topbar">
+      <div class="segmented" id="viewSwitch">
+        <button data-view="calendario" class="active">Calendario</button>
+        <button data-view="materias">Materias</button>
+      </div>
+      <div class="overall-ring-wrap">
+        <div class="overall-label" id="overallLabel"></div>
+        <svg width="46" height="46" viewBox="0 0 46 46" id="overallRing"></svg>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module" src="firebase-config.js"></script>
+<script>
+const PLAN_SEED = [
+  { id: "K2311", nombre: "Analisis Matematico I", anio: 1, periodo: "2do Cuat" },
+  { id: "K2312", nombre: "Algebra y Geometria Analitica", anio: 1, periodo: "1er Cuat" },
+  { id: "K2313", nombre: "Fisica I", anio: 1, periodo: "1er Cuat" },
+  { id: "K2314", nombre: "Ingles I", anio: 1, periodo: "1er Cuat" },
+  { id: "K2315", nombre: "Logica y Estructuras Discretas", anio: 1, periodo: "1er Cuat" },
+  { id: "K2316", nombre: "Algoritmos y Estructuras de Datos", anio: 1, periodo: "2do Cuat" },
+  { id: "K2317", nombre: "Arquitectura de Computadoras", anio: 1, periodo: "2do Cuat" },
+  { id: "K2318", nombre: "Sistemas y Procesos de Negocio", anio: 1, periodo: "Anual" },
+
+  { id: "K2321", nombre: "Analisis Matematico II", anio: 2, periodo: "Anual" },
+  { id: "K2322", nombre: "Fisica II", anio: 2, periodo: "1er Cuat" },
+  { id: "K2323", nombre: "Ingenieria y Sociedad", anio: 2, periodo: "1er Cuat" },
+  { id: "K2324", nombre: "Ingles II", anio: 2, periodo: "2do Cuat" },
+  { id: "K2325", nombre: "Sintaxis y Semantica de los Lenguajes", anio: 2, periodo: "1er Cuat" },
+  { id: "K2326", nombre: "Paradigmas de Programacion", anio: 2, periodo: "2do Cuat" },
+  { id: "K2327", nombre: "Sistemas Operativos", anio: 2, periodo: "2do Cuat" },
+  { id: "K2328", nombre: "Analisis de Sistemas de Informacion (Integradora)", anio: 2, periodo: "Anual" },
+
+  { id: "K2331", nombre: "Probabilidad y Estadistica", anio: 3, periodo: "2do Cuat" },
+  { id: "K2332", nombre: "Economia", anio: 3, periodo: "1er Cuat" },
+  { id: "K2333", nombre: "Bases de Datos", anio: 3, periodo: "1er Cuat" },
+  { id: "K2334", nombre: "Desarrollo de Software", anio: 3, periodo: "2do Cuat" },
+  { id: "K2335", nombre: "Comunicacion de Datos", anio: 3, periodo: "2do Cuat" },
+  { id: "K2336", nombre: "Analisis Numerico", anio: 3, periodo: "1er Cuat" },
+  { id: "K2337", nombre: "Diseno de Sistemas de Informacion (Integradora)", anio: 3, periodo: "Anual" },
+  { id: "K233A", nombre: "Seminario Integrador", anio: 3, periodo: "2do Cuat" },
+
+  { id: "K2341", nombre: "Legislacion", anio: 4, periodo: "1er Cuat" },
+  { id: "K2342", nombre: "Ingenieria y Calidad de Software", anio: 4, periodo: "2do Cuat" },
+  { id: "K2343", nombre: "Redes de Datos", anio: 4, periodo: "1er Cuat" },
+  { id: "K2344", nombre: "Investigacion Operativa", anio: 4, periodo: "Anual" },
+  { id: "K2345", nombre: "Simulacion", anio: 4, periodo: "1er Cuat" },
+  { id: "K2346", nombre: "Tecnologias para la Automatizacion", anio: 4, periodo: "2do Cuat" },
+  { id: "K2347", nombre: "Administracion de Sistemas de Informacion (Integradora)", anio: 4, periodo: "Anual" },
+
+  { id: "K2351", nombre: "Inteligencia Artificial", anio: 5, periodo: "1er Cuat" },
+  { id: "K2352", nombre: "Ciencia de Datos", anio: 5, periodo: "2do Cuat" },
+  { id: "K2353", nombre: "Sistemas de Gestion", anio: 5, periodo: "1er Cuat" },
+  { id: "K2355", nombre: "Seguridad en los Sistemas de Informacion", anio: 5, periodo: "1er Cuat" },
+  { id: "K2356", nombre: "Proyecto Final", anio: 5, periodo: "Anual" },
+  { id: "K2357", nombre: "Practica Profesional Supervisada", anio: 5, periodo: "-" },
+  { id: "K2354", nombre: "Gestion Gerencial", anio: 5, periodo: "2do Cuat" },
+
+  { id: "K2338", nombre: "Metodologia de la Investigacion (electiva)", anio: 3, periodo: "2do Cuat" },
+  { id: "K2339", nombre: "Emprendedorismo (electiva)", anio: 3, periodo: "2do Cuat" },
+  { id: "K2348", nombre: "Sistemas Distribuidos (electiva)", anio: 4, periodo: "2do Cuat" },
+  { id: "K2358", nombre: "Auditoria de Sistemas de Informacion (electiva)", anio: 5, periodo: "1er Cuat" },
+  { id: "K2359", nombre: "Gestion Avanzada de Datos (electiva)", anio: 5, periodo: "2do Cuat" },
+  { id: "K235A", nombre: "Desarrollo de Aplicacion Cliente Servidor (electiva)", anio: 5, periodo: "2do Cuat" },
+  { id: "K235C", nombre: "Consolidacion de TICs (electiva)", anio: 5, periodo: "-" },
+  { id: "K235B", nombre: "Ingenieria y Desarrollo (electiva)", anio: 5, periodo: "-" },
+  { id: "K2329", nombre: "Quimica (electiva)", anio: 1, periodo: "1er Cuat" },
+  { id: "K232A", nombre: "Sistemas de Representacion (electiva)", anio: 1, periodo: "1er Cuat" },
+  { id: "K235D", nombre: "Modelado y Optimizacion de Sistemas (electiva)", anio: 0, periodo: "-" },
+  { id: "K2349", nombre: "Relaciones Humanas (electiva)", anio: 4, periodo: "1er Cuat" },
+  { id: "K235E", nombre: "Formacion en Areas Ingenieriles en el Extranjero (electiva)", anio: 0, periodo: "-" },
+  { id: "K23602", nombre: "Ciudades Digitales y Gobierno Electronico (electiva)", anio: 0, periodo: "-" },
+  { id: "K23344", nombre: "Creatividad e Innovacion (electiva)", anio: 0, periodo: "-" },
+  { id: "K23598", nombre: "Economia del Conocimiento (electiva)", anio: 0, periodo: "-" },
+  { id: "K23465", nombre: "Gerenciamiento de Proyectos de SI (electiva)", anio: 0, periodo: "-" },
+  { id: "K23596", nombre: "Gestion de Empresas Digitales (electiva)", anio: 0, periodo: "-" },
+  { id: "K23411", nombre: "Seguridad en Aplicaciones Web (electiva)", anio: 0, periodo: "-" },
+  { id: "K23586", nombre: "Tecnologias Aplicadas a Soluciones de Datos (electiva)", anio: 0, periodo: "-" },
+];
+
+/* ===================== Estado global ===================== */
+let materias = [];       // { id, nombre, anio, periodo, estado, nota }
+let eventos = [];        // { id, materiaId, tipo, titulo, fecha }
+let documentos = [];     // { id, materiaId, nombre, categoria, url }
+let view = "calendario";
+let activeMateriaId = null;
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
+let openYears = new Set([1]);
+let openPeriods = new Set();
+
+const ESTADOS = {
+  ninguno:  { label: "Sin cursar", color: "var(--c-neutral)", bg: "var(--c-neutral-bg)", cls: "sel-none" },
+  curso:    { label: "En curso",   color: "var(--c-curso)",   bg: "var(--c-curso-bg)",   cls: "sel-curso" },
+  promo:    { label: "Promocionada", color: "var(--c-promo)", bg: "var(--c-promo-bg)",   cls: "sel-promo" },
+  pendiente:{ label: "Examen pendiente", color: "var(--c-pend)", bg: "var(--c-pend-bg)", cls: "sel-pend" },
+  atrasada: { label: "Desaprobada", color: "var(--c-atras)",  bg: "var(--c-atras-bg)",   cls: "sel-atras" },
+};
+
+const TIPOS_EVENTO = {
+  parcial: { label: "Parcial", cls: "tipo-parcial", color: "var(--c-curso)" },
+  final:   { label: "Final",   cls: "tipo-final",   color: "var(--c-atras)" },
+  entrega: { label: "Entrega", cls: "tipo-entrega", color: "var(--c-pend)" },
+  otro:    { label: "Otro",    cls: "tipo-otro",     color: "var(--c-neutral)" },
+};
+
+const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const DOW = ["lun","mar","mié","jue","vie","sáb","dom"];
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+/* ===================== Storage ===================== */
+async function loadAll(){
+  let isNewUser = false;
+  try{
+    const m = await window.storage.get("materias");
+    materias = m ? JSON.parse(m.value) : seedMaterias();
+  }catch(e){
+    materias = seedMaterias();
+    isNewUser = true;
+  }
+
+  try{
+    const ev = await window.storage.get("eventos");
+    eventos = ev ? JSON.parse(ev.value) : [];
+  }catch(e){ eventos = []; }
+
+  try{
+    const d = await window.storage.get("documentos");
+    documentos = d ? JSON.parse(d.value) : [];
+  }catch(e){ documentos = []; }
+
+  if(isNewUser) await saveMaterias();
+}
+
+function seedMaterias(){
+  return PLAN_SEED.map(m => ({
+    id: m.id,
+    nombre: m.nombre,
+    anio: m.anio || 0,
+    periodo: m.periodo || "-",
+    estado: "ninguno",
+    nota: null,
+  }));
+}
+
+let saveTimer = null;
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  setSyncPill("saving");
+  saveTimer = setTimeout(async ()=>{
+    try{
+      await saveMaterias();
+      await saveEventos();
+      await saveDocumentos();
+      setSyncPill("ok");
+    }catch(e){
+      setSyncPill("err");
+    }
+  }, 350);
+}
+async function saveMaterias(){ await window.storage.set("materias", JSON.stringify(materias)); }
+async function saveEventos(){ await window.storage.set("eventos", JSON.stringify(eventos)); }
+async function saveDocumentos(){ await window.storage.set("documentos", JSON.stringify(documentos)); }
+
+function setSyncPill(state){
+  const el = document.getElementById("syncPill");
+  el.classList.remove("ok","err");
+  if(state === "saving"){
+    el.innerHTML = '<i class="ti ti-cloud"></i><span>Guardando…</span>';
+  }else if(state === "ok"){
+    el.classList.add("ok");
+    el.innerHTML = '<i class="ti ti-cloud-check"></i><span>Sincronizado</span>';
+  }else{
+    el.classList.add("err");
+    el.innerHTML = '<i class="ti ti-cloud-off"></i><span>Error al guardar</span>';
+  }
+}
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=> t.classList.remove("show"), 2200);
+}
+
+/* ===================== Helpers de datos ===================== */
+function materiaById(id){ return materias.find(m => m.id === id); }
+function eventosDeMateria(id){ return eventos.filter(e => e.materiaId === id).sort((a,b)=> a.fecha.localeCompare(b.fecha)); }
+function documentosDeMateria(id){ return documentos.filter(d => d.materiaId === id); }
+
+function gruposPorAnioPeriodo(){
+  const anios = {};
+  materias.forEach(m=>{
+    const a = m.anio || 0;
+    if(!anios[a]) anios[a] = {};
+    const p = m.periodo || "-";
+    if(!anios[a][p]) anios[a][p] = [];
+    anios[a][p].push(m);
+  });
+  return anios;
+}
+
+function progresoDeLista(lista){
+  const total = lista.length || 1;
+  const promo = lista.filter(m=>m.estado==="promo").length;
+  const curso = lista.filter(m=>m.estado==="curso").length;
+  const pend = lista.filter(m=>m.estado==="pendiente").length;
+  const atras = lista.filter(m=>m.estado==="atrasada").length;
+  return { total, promo, curso, pend, atras };
+}
+
+/* ===================== Render: anillo de progreso ===================== */
+function ringSVG(prog, size, strokeW){
+  const r = (size/2) - strokeW;
+  const cx = size/2, cy = size/2;
+  const circ = 2*Math.PI*r;
+  const segs = [
+    { val: prog.promo, color: "var(--c-promo)" },
+    { val: prog.curso, color: "var(--c-curso)" },
+    { val: prog.pend, color: "var(--c-pend)" },
+    { val: prog.atras, color: "var(--c-atras)" },
+  ];
+  let offsetAcc = 0;
+  let paths = "";
+  segs.forEach(seg=>{
+    if(seg.val <= 0) return;
+    const frac = seg.val / prog.total;
+    const len = frac * circ;
+    paths += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="${strokeW}"
+      stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-offsetAcc}" transform="rotate(-90 ${cx} ${cy})" stroke-linecap="butt"/>`;
+    offsetAcc += len;
+  });
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border-soft)" stroke-width="${strokeW}"/>${paths}`;
+}
+
+function renderOverallRing(){
+  const prog = progresoDeLista(materias.filter(m=>m.anio>0));
+  const svg = document.getElementById("overallRing");
+  svg.innerHTML = ringSVG(prog, 46, 5);
+  const done = prog.promo;
+  const totalReal = materias.filter(m=>m.anio>0).length;
+  document.getElementById("overallLabel").innerHTML = `<b>${done}/${totalReal}</b> materias<br>promocionadas`;
+}
+
+/* ===================== Render: sidebar ===================== */
+function renderSidebar(){
+  const tree = document.getElementById("sidebar-tree");
+  const grupos = gruposPorAnioPeriodo();
+  const aniosOrdenados = Object.keys(grupos).map(Number).filter(a=>a>0).sort((a,b)=>a-b);
+  const sinAnio = grupos[0];
+
+  let html = "";
+  aniosOrdenados.forEach(anio=>{
+    const periodos = grupos[anio];
+    const todasMaterias = Object.values(periodos).flat();
+    const prog = progresoDeLista(todasMaterias);
+    const isOpen = openYears.has(anio);
+
+    html += `<div class="tree-year">
+      <div class="tree-year-head ${isOpen?'open':''}" data-anio="${anio}">
+        <i class="ti ti-chevron-right chev"></i>
+        <span>${anio}° año</span>
+        <svg class="ring-mini" width="20" height="20" viewBox="0 0 20 20">${ringSVG(prog,20,2.5)}</svg>
+      </div>`;
+
+    if(isOpen){
+      const periodoOrden = ["1er Cuat","2do Cuat","Anual","-"];
+      const periodosKeys = Object.keys(periodos).sort((a,b)=> periodoOrden.indexOf(a) - periodoOrden.indexOf(b));
+      periodosKeys.forEach(periodo=>{
+        const pkey = anio+"-"+periodo;
+        const pOpen = openPeriods.has(pkey);
+        html += `<div class="tree-period">
+          <div class="tree-period-head ${pOpen?'open':''}" data-pkey="${pkey}">
+            <i class="ti ti-chevron-right chev"></i>
+            <span>${periodo}</span>
+          </div>`;
+        if(pOpen){
+          html += `<div class="tree-materias">`;
+          periodos[periodo].forEach(m=>{
+            const est = ESTADOS[m.estado] || ESTADOS.ninguno;
+            html += `<div class="tree-materia ${m.id===activeMateriaId?'active':''}" data-mid="${m.id}">
+              <span class="dot" style="background:${est.color}"></span>
+              <span class="nm">${m.nombre}</span>
+            </div>`;
+          });
+          html += `</div>`;
+        }
+        html += `</div>`;
+      });
+    }
+    html += `</div>`;
+  });
+
+  if(sinAnio && sinAnio["-"] && sinAnio["-"].length){
+    const pkey = "0--";
+    const pOpen = openPeriods.has(pkey);
+    html += `<div class="tree-year">
+      <div class="tree-period-head ${pOpen?'open':''}" data-pkey="${pkey}" style="margin-left:0;">
+        <i class="ti ti-chevron-right chev"></i>
+        <span>Electivas / sin año asignado</span>
+      </div>`;
+    if(pOpen){
+      html += `<div class="tree-materias" style="margin-left:18px;">`;
+      sinAnio["-"].forEach(m=>{
+        const est = ESTADOS[m.estado] || ESTADOS.ninguno;
+        html += `<div class="tree-materia ${m.id===activeMateriaId?'active':''}" data-mid="${m.id}">
+          <span class="dot" style="background:${est.color}"></span>
+          <span class="nm">${m.nombre}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  tree.innerHTML = html;
+
+  tree.querySelectorAll(".tree-year-head").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const a = Number(el.dataset.anio);
+      if(openYears.has(a)) openYears.delete(a); else openYears.add(a);
+      renderSidebar();
+    });
+  });
+  tree.querySelectorAll(".tree-period-head").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const k = el.dataset.pkey;
+      if(openPeriods.has(k)) openPeriods.delete(k); else openPeriods.add(k);
+      renderSidebar();
+    });
+  });
+  tree.querySelectorAll(".tree-materia").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      activeMateriaId = el.dataset.mid;
+      view = "detalle";
+      renderAll();
+    });
+  });
+}
+
+/* ===================== Render: top switch ===================== */
+function renderViewSwitch(){
+  document.querySelectorAll("#viewSwitch button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view === view || (view==="detalle" && b.dataset.view==="materias"));
+  });
+}
+
+/* ===================== Render: vista calendario ===================== */
+function renderCalendario(){
+  const content = document.getElementById("content");
+  const firstDay = new Date(calYear, calMonth, 1);
+  const startOffset = (firstDay.getDay() + 6) % 7; // lunes=0
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+
+  let cells = "";
+  DOW.forEach(d=> cells += `<div class="cal-dow">${d}</div>`);
+  for(let i=0;i<startOffset;i++) cells += `<div class="cal-cell empty"></div>`;
+
+  for(let day=1; day<=daysInMonth; day++){
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===day;
+    const dayEvents = eventos.filter(e=>e.fecha===dateStr);
+    let evHtml = "";
+    dayEvents.slice(0,3).forEach(e=>{
+      const tipo = TIPOS_EVENTO[e.tipo] || TIPOS_EVENTO.otro;
+      const mat = materiaById(e.materiaId);
+      evHtml += `<div class="cal-event ${tipo.cls}" title="${e.titulo}">${mat? mat.nombre.split(" ").slice(0,2).join(" ")+": ":""}${e.titulo}</div>`;
+    });
+    if(dayEvents.length>3) evHtml += `<div class="cal-event tipo-otro">+${dayEvents.length-3} más</div>`;
+    cells += `<div class="cal-cell ${isToday?'today':''}" data-date="${dateStr}">
+      <span class="cal-daynum tabular">${day}</span>
+      ${evHtml}
+    </div>`;
+  }
+
+  const upcoming = eventos
+    .filter(e=> e.fecha >= today.toISOString().slice(0,10))
+    .sort((a,b)=> a.fecha.localeCompare(b.fecha))
+    .slice(0,8);
+
+  let upcomingHtml = "";
+  if(upcoming.length === 0){
+    upcomingHtml = `<p class="empty-hint">No hay fechas próximas. Agregá un parcial o entrega desde una materia.</p>`;
+  }else{
+    upcoming.forEach(e=>{
+      const mat = materiaById(e.materiaId);
+      const tipo = TIPOS_EVENTO[e.tipo] || TIPOS_EVENTO.otro;
+      const dt = new Date(e.fecha+"T00:00:00");
+      upcomingHtml += `<div class="upcoming-item" data-mid="${e.materiaId}" style="cursor:pointer;">
+        <div class="upcoming-date">
+          <div class="d tabular">${dt.getDate()}</div>
+          <div class="m">${MESES[dt.getMonth()].slice(0,3)}</div>
+        </div>
+        <div class="upcoming-info">
+          <div class="t">${e.titulo}</div>
+          <div class="s">${mat ? mat.nombre : "Materia eliminada"}</div>
+        </div>
+        <span class="upcoming-tag ${tipo.cls}">${tipo.label}</span>
+      </div>`;
+    });
+  }
+
+  content.innerHTML = `
+    <div class="detail-grid">
+      <div>
+        <div class="cal-header">
+          <span class="cal-month-label">${MESES[calMonth]} ${calYear}</span>
+          <div class="cal-nav">
+            <button id="calPrev"><i class="ti ti-chevron-left"></i></button>
+            <button id="calToday"><i class="ti ti-point"></i></button>
+            <button id="calNext"><i class="ti ti-chevron-right"></i></button>
+          </div>
+        </div>
+        <div class="cal-grid">${cells}</div>
+      </div>
+      <div class="card">
+        <p class="section-title">Próximas fechas</p>
+        <div class="upcoming-list">${upcomingHtml}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("calPrev").addEventListener("click", ()=>{
+    calMonth--; if(calMonth<0){ calMonth=11; calYear--; } renderCalendario();
+  });
+  document.getElementById("calNext").addEventListener("click", ()=>{
+    calMonth++; if(calMonth>11){ calMonth=0; calYear++; } renderCalendario();
+  });
+  document.getElementById("calToday").addEventListener("click", ()=>{
+    const t = new Date(); calMonth=t.getMonth(); calYear=t.getFullYear(); renderCalendario();
+  });
+  content.querySelectorAll(".upcoming-item").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      if(el.dataset.mid){ activeMateriaId = el.dataset.mid; view="detalle"; renderAll(); }
+    });
+  });
+}
+
+/* ===================== Render: vista materias (grid) ===================== */
+function renderMateriasGrid(){
+  const content = document.getElementById("content");
+  if(materias.length === 0){
+    content.innerHTML = `<div class="empty-state"><i class="ti ti-school"></i>Todavía no agregaste materias.</div>`;
+    return;
+  }
+  let html = `<div class="materias-grid">`;
+  materias.slice().sort((a,b)=> (a.anio-b.anio) || a.nombre.localeCompare(b.nombre)).forEach(m=>{
+    const est = ESTADOS[m.estado] || ESTADOS.ninguno;
+    html += `<div class="materia-card" data-mid="${m.id}">
+      <div class="materia-card-top">
+        <span class="materia-card-name">${m.nombre}</span>
+        <span class="status-badge" style="background:${est.bg};color:${est.color}">${est.label}</span>
+      </div>
+      <span class="materia-card-meta">${m.anio>0? m.anio+'° año · ':''}${m.periodo}</span>
+    </div>`;
+  });
+  html += `</div>`;
+  content.innerHTML = html;
+
+  content.querySelectorAll(".materia-card").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      activeMateriaId = el.dataset.mid;
+      view = "detalle";
+      renderAll();
+    });
+  });
+}
+
+/* ===================== Render: detalle de materia ===================== */
+function renderDetalle(){
+  const content = document.getElementById("content");
+  const m = materiaById(activeMateriaId);
+  if(!m){
+    view = "materias"; renderAll(); return;
+  }
+  const evs = eventosDeMateria(m.id);
+  const docs = documentosDeMateria(m.id);
+
+  let statusHtml = "";
+  Object.keys(ESTADOS).forEach(key=>{
+    const e = ESTADOS[key];
+    statusHtml += `<span class="status-opt ${e.cls} ${m.estado===key?'active':''}" data-status="${key}">${e.label}</span>`;
+  });
+
+  let evsHtml = "";
+  if(evs.length === 0){
+    evsHtml = `<p class="empty-hint">Sin fechas registradas todavía.</p>`;
+  }else{
+    evs.forEach(e=>{
+      const tipo = TIPOS_EVENTO[e.tipo] || TIPOS_EVENTO.otro;
+      const dt = new Date(e.fecha+"T00:00:00");
+      const fechaFmt = `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+      evsHtml += `<div class="event-row">
+        <span class="tag-dot" style="background:${tipo.color}"></span>
+        <span class="ev-name">${e.titulo}</span>
+        <span class="ev-date tabular">${fechaFmt}</span>
+        <i class="ti ti-trash del-btn" data-evid="${e.id}"></i>
+      </div>`;
+    });
+  }
+
+  let docsHtml = "";
+  if(docs.length === 0){
+    docsHtml = `<p class="empty-hint">Sin documentos guardados todavía.</p>`;
+  }else{
+    docs.forEach(d=>{
+      docsHtml += `<div class="doc-row">
+        <i class="ti ti-file-text doc-icon"></i>
+        <div class="doc-info">
+          <div class="doc-name"><a href="${d.url}" target="_blank" rel="noopener">${d.nombre}</a></div>
+          <div class="doc-cat">${d.categoria}</div>
+        </div>
+        <i class="ti ti-trash del-btn" data-docid="${d.id}"></i>
+      </div>`;
+    });
+  }
+
+  content.innerHTML = `
+    <div class="back-btn" id="backBtn"><i class="ti ti-arrow-left"></i> Volver a materias</div>
+    <div class="materia-detail-header">
+      <div>
+        <h1 class="materia-detail-name">${m.nombre}</h1>
+        <p class="materia-detail-meta">${m.anio>0? m.anio+'° año · ':''}${m.periodo} · ${m.id}</p>
+      </div>
+      <i class="ti ti-trash icon-btn" id="delMateriaBtn" title="Eliminar materia" style="color:var(--c-atras)"></i>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <p class="section-title">Estado</p>
+      <div class="status-select-wrap">${statusHtml}</div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="card">
+        <div class="row-between">
+          <p class="section-title" style="margin:0;">Fechas</p>
+          <i class="ti ti-plus icon-btn" id="addEventBtn"></i>
+        </div>
+        ${evsHtml}
+      </div>
+      <div class="card">
+        <div class="row-between">
+          <p class="section-title" style="margin:0;">Documentos</p>
+          <i class="ti ti-plus icon-btn" id="addDocBtn"></i>
+        </div>
+        ${docsHtml}
+      </div>
+    </div>
+  `;
+
+  document.getElementById("backBtn").addEventListener("click", ()=>{
+    view = "materias"; activeMateriaId = null; renderAll();
+  });
+  document.getElementById("delMateriaBtn").addEventListener("click", ()=> confirmDeleteMateria(m.id));
+  content.querySelectorAll(".status-opt").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      m.estado = el.dataset.status;
+      scheduleSave();
+      renderAll();
+    });
+  });
+  document.getElementById("addEventBtn").addEventListener("click", ()=> openEventModal(m.id));
+  document.getElementById("addDocBtn").addEventListener("click", ()=> openDocModal(m.id));
+  content.querySelectorAll("[data-evid]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      eventos = eventos.filter(e=>e.id !== el.dataset.evid);
+      scheduleSave();
+      renderDetalle();
+    });
+  });
+  content.querySelectorAll("[data-docid]").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      documentos = documentos.filter(d=>d.id !== el.dataset.docid);
+      scheduleSave();
+      renderDetalle();
+    });
+  });
+}
+
+function confirmDeleteMateria(id){
+  openModal(`
+    <p class="modal-title">Eliminar materia</p>
+    <p style="font-size:13px;color:var(--text-dim);margin:0 0 4px;">Se va a borrar la materia junto con sus fechas y documentos guardados. Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn" id="cancelDel">Cancelar</button>
+      <button class="btn danger-text" id="confirmDel" style="border:1px solid var(--c-atras-bg);color:var(--c-atras);">Eliminar</button>
+    </div>
+  `);
+  document.getElementById("cancelDel").addEventListener("click", closeModal);
+  document.getElementById("confirmDel").addEventListener("click", ()=>{
+    materias = materias.filter(m=>m.id !== id);
+    eventos = eventos.filter(e=>e.materiaId !== id);
+    documentos = documentos.filter(d=>d.materiaId !== id);
+    scheduleSave();
+    closeModal();
+    view = "materias"; activeMateriaId = null;
+    renderAll();
+    showToast("Materia eliminada");
+  });
+}
+
+/* ===================== Modal genérico ===================== */
+function openModal(innerHtml){
+  let overlay = document.getElementById("modalOverlay");
+  if(!overlay){
+    overlay = document.createElement("div");
+    overlay.id = "modalOverlay";
+    overlay.className = "modal-overlay";
+    document.body.appendChild(overlay);
+    overlay.addEventListener("click", (e)=>{ if(e.target === overlay) closeModal(); });
+  }
+  overlay.innerHTML = `<div class="modal-box">${innerHtml}</div>`;
+  overlay.style.display = "flex";
+}
+function closeModal(){
+  const overlay = document.getElementById("modalOverlay");
+  if(overlay) overlay.style.display = "none";
+}
+
+/* ===================== Modal: agregar materia ===================== */
+function openAddMateriaModal(){
+  openModal(`
+    <p class="modal-title">Agregar materia</p>
+    <div class="form-field">
+      <label>Nombre</label>
+      <input type="text" id="fNombre" placeholder="Ej: Cálculo Avanzado" />
+    </div>
+    <div class="form-field">
+      <label>Año</label>
+      <select id="fAnio">
+        <option value="1">1° año</option>
+        <option value="2">2° año</option>
+        <option value="3">3° año</option>
+        <option value="4">4° año</option>
+        <option value="5">5° año</option>
+        <option value="0">Sin año / electiva</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Período</label>
+      <select id="fPeriodo">
+        <option value="1er Cuat">1er cuatrimestre</option>
+        <option value="2do Cuat">2do cuatrimestre</option>
+        <option value="Anual">Anual</option>
+        <option value="-">Sin definir</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelAdd">Cancelar</button>
+      <button class="btn primary" id="confirmAdd">Agregar</button>
+    </div>
+  `);
+  document.getElementById("cancelAdd").addEventListener("click", closeModal);
+  document.getElementById("confirmAdd").addEventListener("click", ()=>{
+    const nombre = document.getElementById("fNombre").value.trim();
+    if(!nombre){ showToast("Poné un nombre para la materia"); return; }
+    const nueva = {
+      id: "M"+uid(),
+      nombre,
+      anio: Number(document.getElementById("fAnio").value),
+      periodo: document.getElementById("fPeriodo").value,
+      estado: "ninguno",
+      nota: null,
+    };
+    materias.push(nueva);
+    openYears.add(nueva.anio);
+    openPeriods.add(nueva.anio+"-"+nueva.periodo);
+    scheduleSave();
+    closeModal();
+    renderAll();
+    showToast("Materia agregada");
+  });
+}
+
+/* ===================== Modal: agregar evento ===================== */
+function openEventModal(materiaId){
+  openModal(`
+    <p class="modal-title">Nueva fecha</p>
+    <div class="form-field">
+      <label>Título</label>
+      <input type="text" id="fTitulo" placeholder="Ej: Primer parcial" />
+    </div>
+    <div class="form-field">
+      <label>Tipo</label>
+      <select id="fTipo">
+        <option value="parcial">Parcial</option>
+        <option value="final">Final</option>
+        <option value="entrega">Entrega de trabajo</option>
+        <option value="otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Fecha</label>
+      <input type="date" id="fFecha" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelEv">Cancelar</button>
+      <button class="btn primary" id="confirmEv">Guardar</button>
+    </div>
+  `);
+  document.getElementById("cancelEv").addEventListener("click", closeModal);
+  document.getElementById("confirmEv").addEventListener("click", ()=>{
+    const titulo = document.getElementById("fTitulo").value.trim();
+    const fecha = document.getElementById("fFecha").value;
+    if(!titulo || !fecha){ showToast("Completá título y fecha"); return; }
+    eventos.push({ id:"E"+uid(), materiaId, tipo: document.getElementById("fTipo").value, titulo, fecha });
+    scheduleSave();
+    closeModal();
+    renderDetalle();
+    showToast("Fecha agregada");
+  });
+}
+
+/* ===================== Modal: agregar documento ===================== */
+function openDocModal(materiaId){
+  openModal(`
+    <p class="modal-title">Nuevo documento</p>
+    <div class="form-field">
+      <label>Nombre</label>
+      <input type="text" id="fDocNombre" placeholder="Ej: Apunte unidad 3" />
+    </div>
+    <div class="form-field">
+      <label>Categoría</label>
+      <select id="fDocCat">
+        <option value="Apuntes">Apuntes</option>
+        <option value="Bibliografía">Bibliografía</option>
+        <option value="Modelo de parcial">Modelo de parcial</option>
+        <option value="Resumen">Resumen</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Link (Drive, etc.)</label>
+      <input type="text" id="fDocUrl" placeholder="https://drive.google.com/..." />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="cancelDoc">Cancelar</button>
+      <button class="btn primary" id="confirmDoc">Guardar</button>
+    </div>
+  `);
+  document.getElementById("cancelDoc").addEventListener("click", closeModal);
+  document.getElementById("confirmDoc").addEventListener("click", ()=>{
+    const nombre = document.getElementById("fDocNombre").value.trim();
+    let url = document.getElementById("fDocUrl").value.trim();
+    if(!nombre || !url){ showToast("Completá nombre y link"); return; }
+    if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+    documentos.push({ id:"D"+uid(), materiaId, nombre, categoria: document.getElementById("fDocCat").value, url });
+    scheduleSave();
+    closeModal();
+    renderDetalle();
+    showToast("Documento agregado");
+  });
+}
+
+/* ===================== Render maestro ===================== */
+function renderAll(){
+  renderSidebar();
+  renderViewSwitch();
+  renderOverallRing();
+  if(view === "calendario") renderCalendario();
+  else if(view === "materias") renderMateriasGrid();
+  else if(view === "detalle") renderDetalle();
+}
+
+/* ===================== Init ===================== */
+document.getElementById("viewSwitch").addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  view = btn.dataset.view;
+  activeMateriaId = null;
+  renderAll();
+});
+document.getElementById("btnAddMateria").addEventListener("click", openAddMateriaModal);
+
+async function startApp(){
+  setSyncPill("saving");
+  await loadAll();
+  setSyncPill("ok");
+  renderAll();
+}
+
+if(window.storage){
+  startApp();
+}else{
+  window.addEventListener("storage-ready", startApp, { once: true });
+}
+
+</script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
