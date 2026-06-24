@@ -319,8 +319,9 @@
   .cal-nav button:hover{ background:var(--panel-elev-2); color:var(--text); }
   .cal-grid{
     display:grid;
-    grid-template-columns:repeat(7,1fr);
+    grid-template-columns:repeat(7,minmax(0,1fr));
     gap:6px;
+    align-items:stretch;
   }
   .cal-dow{
     font-size:11px;
@@ -350,10 +351,11 @@
     font-size:10.5px;
     padding:2px 5px;
     border-radius:5px;
-    white-space:nowrap;
+    white-space:normal;
     overflow:hidden;
     text-overflow:ellipsis;
-    line-height:1.5;
+    line-height:1.3;
+    word-break:break-word;
   }
   .cal-event.tipo-parcial{ background:var(--c-curso-bg); color:var(--c-curso); }
   .cal-event.tipo-final{ background:var(--c-atras-bg); color:var(--c-atras); }
@@ -1584,7 +1586,15 @@ if(sidebarCloseBtn){ sidebarCloseBtn.addEventListener('click', ()=> toggleSideba
 
 function updateLegajoLabel(){
   const el = document.getElementById('legajoValue');
-  if(el && window.getUserCode){ el.textContent = window.getUserCode(); }
+  if(!el) return;
+  let value = 'default';
+  try {
+    value = localStorage.getItem('mifacultad_user_code') || 'default';
+  } catch (e) {}
+  if(window.getUserCode){
+    try { value = window.getUserCode(); } catch (e) {}
+  }
+  el.textContent = value || 'default';
 }
 
 function openLegajoModal(){
@@ -1607,7 +1617,11 @@ function openLegajoModal(){
     updateLegajoLabel();
     closeModal();
     showToast('Legajo actualizado');
-    loadAll().then(()=>renderAll()).catch(()=>{});
+    setSyncPill('saving');
+    loadAll().then(()=>{
+      setSyncPill('ok');
+      renderAll();
+    }).catch(()=>{ setSyncPill('err'); });
   });
 }
 
@@ -1667,3 +1681,4 @@ if(window.storage){
 </script>
 </body>
 </html>
+
