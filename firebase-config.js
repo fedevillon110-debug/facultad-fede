@@ -191,8 +191,18 @@ window.storage = {
   },
 };
 
+function looksLikePdfFile(file) {
+  if (!file) return false;
+  const type = (file.type || "").toLowerCase();
+  const name = (file.name || "").toLowerCase();
+  return type === "application/pdf" || type === "application/octet-stream" && name.endsWith(".pdf") || name.endsWith(".pdf");
+}
+
 window.uploadFile = async function (file) {
   if (!file) throw new Error("No file provided");
+  if (!looksLikePdfFile(file)) {
+    throw new Error("Solo se permiten archivos PDF");
+  }
   const userCode = getOrCreateUserCode();
   const safeName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
   const path = `usuarios/${userCode}/files/${safeName}`;
@@ -233,4 +243,5 @@ if (document.getElementById("legajoValue")) {
   document.getElementById("legajoValue").textContent = window.currentUserCode;
 }
 window.dispatchEvent(new Event("storage-ready"));
+
 
