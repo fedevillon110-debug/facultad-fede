@@ -734,6 +734,43 @@ let calMonth = new Date().getMonth();
 let calYear = new Date().getFullYear();
 let openYears = new Set([1]);
 let openPeriods = new Set();
+let historyStack = [];
+let historyIndex = -1;
+
+function recordNavigationState(){
+  const state = { view, activeMateriaId };
+  const lastState = historyStack[historyIndex];
+  if (lastState && lastState.view === state.view && lastState.activeMateriaId === state.activeMateriaId) return;
+  historyStack = historyStack.slice(0, historyIndex + 1);
+  historyStack.push({ view: state.view, activeMateriaId: state.activeMateriaId });
+  historyIndex = historyStack.length - 1;
+  updateHistoryButtons();
+}
+
+function restoreHistoryState(index){
+  if (index < 0 || index >= historyStack.length) return;
+  const nextState = historyStack[index];
+  view = nextState.view;
+  activeMateriaId = nextState.activeMateriaId;
+  historyIndex = index;
+  renderAll();
+  updateHistoryButtons();
+}
+
+function goBackInApp(){
+  if (historyIndex > 0) restoreHistoryState(historyIndex - 1);
+}
+
+function goForwardInApp(){
+  if (historyIndex < historyStack.length - 1) restoreHistoryState(historyIndex + 1);
+}
+
+function updateHistoryButtons(){
+  const backBtn = document.getElementById("historyBackBtn");
+  const forwardBtn = document.getElementById("historyForwardBtn");
+  if (backBtn) backBtn.disabled = historyIndex <= 0;
+  if (forwardBtn) forwardBtn.disabled = historyIndex >= historyStack.length - 1;
+}
 
 const ESTADOS = {
   ninguno:  { label: "Sin cursar", color: "var(--c-neutral)", bg: "var(--c-neutral-bg)", cls: "sel-none" },
@@ -1122,6 +1159,7 @@ function renderMateriasGrid(){
     el.addEventListener("click", ()=>{
       activeMateriaId = el.dataset.mid;
       view = "detalle";
+      recordNavigationState();
       renderAll();
     });
   });
@@ -1133,6 +1171,7 @@ function downloadDocument(url, fileName){
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName || 'documento.pdf';
+  link.target = '_self';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -1194,6 +1233,10 @@ function renderDetalle(){
   }
 
   content.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn" id="historyBackBtn" type="button" style="padding:8px 10px;">←</button>
+      <button class="btn" id="historyForwardBtn" type="button" style="padding:8px 10px;">→</button>
+    </div>
     <div class="back-btn" id="backBtn"><i class="ti ti-arrow-left"></i> Volver a materias</div>
     <div class="materia-detail-header">
       <div>
@@ -1230,8 +1273,11 @@ function renderDetalle(){
   `;
 
   document.getElementById("backBtn").addEventListener("click", ()=>{
-    view = "materias"; activeMateriaId = null; renderAll();
+    view = "materias"; activeMateriaId = null; recordNavigationState(); renderAll();
   });
+  document.getElementById("historyBackBtn").addEventListener("click", goBackInApp);
+  document.getElementById("historyForwardBtn").addEventListener("click", goForwardInApp);
+  updateHistoryButtons();
   document.getElementById("delMateriaBtn").addEventListener("click", ()=> confirmDeleteMateria(m.id));
   content.querySelectorAll(".status-opt").forEach(el=>{
     el.addEventListener("click", ()=>{
@@ -1663,6 +1709,7 @@ async function startApp(){
   await loadAll();
   setSyncPill("ok");
   updateLegajoLabel();
+  recordNavigationState();
   renderAll();
 }
 
