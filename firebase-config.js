@@ -193,19 +193,36 @@ window.storage = {
 
 window.uploadFile = async function (file) {
   if (!file) throw new Error("No file provided");
+  const userCode = getOrCreateUserCode();
+  const safeName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
+  const path = `usuarios/${userCode}/files/${safeName}`;
+
+  const withTimeout = async (promise, ms = 12000) => {
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error("Tiempo de subida agotado")), ms);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
   try {
     await initFirebase();
     if (!firebaseReady || !window.firebaseStorage) throw new Error("Firebase unavailable");
-    const userCode = getOrCreateUserCode();
-    const safeName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9_.-]/g, "_")}`;
-    const path = `usuarios/${userCode}/files/${safeName}`;
     const ref = storageRef(window.firebaseStorage, path);
-    await uploadBytes(ref, file);
-    const url = await getDownloadURL(ref);
+    await withTimeout(uploadBytes(ref, file));
+    const url = await withTimeout(getDownloadURL(ref));
     return { path, url, name: file.name };
   } catch (e) {
-    const url = URL.createObjectURL(file);
-    return { path: url, url, name: file.name };
+    try {
+      const url = URL.createObjectURL(file);
+      return { path, url, name: file.name, fallback: true };
+    } catch (fallbackError) {
+      throw new Error("No se pudo subir el archivo");
+    }
   }
 };
 
