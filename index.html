@@ -1171,10 +1171,11 @@ function renderDetalle(){
     docsHtml = `<p class="empty-hint">Sin documentos guardados todavía.</p>`;
   }else{
     docs.forEach(d=>{
+      const docHref = d.dataUrl || d.url || "#";
       docsHtml += `<div class="doc-row">
         <i class="ti ti-file-text doc-icon"></i>
         <div class="doc-info">
-          <div class="doc-name"><a href="${d.url}" data-doc-url="${d.url}">${d.nombre}</a></div>
+          <div class="doc-name"><a href="${docHref}" data-doc-url="${docHref}">${d.nombre}</a></div>
           <div class="doc-cat">${d.categoria}</div>
         </div>
         <i class="ti ti-trash del-btn" data-docid="${d.id}"></i>
@@ -1315,7 +1316,7 @@ function openMergeModal(materiaId){
 
       showToast('Subiendo PDF unido...');
       const up = await window.uploadFile(mergedFile);
-      documentos.push({ id: 'D'+uid(), materiaId, nombre: 'Unido ' + new Date().toLocaleString(), categoria: 'Combinado', url: up.url });
+      documentos.push({ id: 'D'+uid(), materiaId, nombre: 'Unido ' + new Date().toLocaleString(), categoria: 'Combinado', url: up.url, dataUrl: up.dataUrl });
       scheduleSave();
       closeModal();
       renderDetalle();
@@ -1543,6 +1544,7 @@ function openDocModal(materiaId){
     let url = document.getElementById("fDocUrl").value.trim();
     const fileInput = document.getElementById('fDocFile');
     const cat = document.getElementById("fDocCat").value;
+    let uploaded = null;
     if(!nombre){ showToast("Completá nombre del documento"); return; }
 
     // If a file was provided, upload it to storage
@@ -1551,8 +1553,8 @@ function openDocModal(materiaId){
       if(!looksLikePdfFile(file)) { showToast('Solo se permiten archivos PDF'); return; }
       try{
         showToast('Subiendo archivo...');
-        const res = await window.uploadFile(file);
-        url = res.url;
+        uploaded = await window.uploadFile(file);
+        url = uploaded.url;
       }catch(e){
         console.error(e);
         showToast('Error al subir archivo');
@@ -1560,9 +1562,9 @@ function openDocModal(materiaId){
       }
     }
 
-    if(!url){ showToast("Completá link o subí un PDF"); return; }
-    if(!/^https?:\/\//i.test(url)) url = "https://" + url;
-    documentos.push({ id:"D"+uid(), materiaId, nombre, categoria: cat, url });
+    if(!url && !uploaded){ showToast("Completá link o subí un PDF"); return; }
+    if(url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+    documentos.push({ id:"D"+uid(), materiaId, nombre, categoria: cat, url: url || null, dataUrl: uploaded && uploaded.dataUrl ? uploaded.dataUrl : null });
     scheduleSave();
     closeModal();
     renderDetalle();
