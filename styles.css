@@ -32,7 +32,8 @@
   body.show-sidebar .sidebar-overlay{ display:block; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:55; }
   #topbar{ padding:12px 14px; gap:10px; flex-wrap:wrap; }
   #content{ padding:16px; }
-  .cal-cell{ min-height:72px; }
+  .cal-cell{ min-height:72px; padding:4px; }
+  .cal-event{ font-size:9px; padding:2px 4px; }
   .materias-grid{ grid-template-columns:1fr; }
 }
 
