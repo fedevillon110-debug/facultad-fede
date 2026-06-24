@@ -1141,15 +1141,7 @@ function downloadDocument(url, fileName){
 function openDocumentUrl(url, fileName){
   if(!url) return;
   const resolved = /^https?:\/\//i.test(url) ? url : "https://" + url;
-  if (resolved.startsWith('data:application/pdf')) {
-    downloadDocument(resolved, fileName || 'documento.pdf');
-    return;
-  }
-  try {
-    window.open(resolved, '_blank', 'noopener,noreferrer');
-  } catch (e) {
-    downloadDocument(resolved, fileName || 'documento.pdf');
-  }
+  downloadDocument(resolved, fileName || 'documento.pdf');
 }
 
 function renderDetalle(){
