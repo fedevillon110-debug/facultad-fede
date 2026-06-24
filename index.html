@@ -1166,10 +1166,20 @@ function renderMateriasGrid(){
 }
 
 /* ===================== Render: detalle de materia ===================== */
-async function downloadDocument(url, fileName){
-  if(!url) return;
-  const resolved = /^https?:\/\//i.test(url) ? url : (url.startsWith('data:') ? url : "https://" + url);
+async function downloadDocument(url, fileName, dataUrl){
+  if(!url && !dataUrl) return;
   try {
+    let resolved = url;
+    if (dataUrl && dataUrl.startsWith('data:application/pdf')) {
+      resolved = dataUrl;
+    } else if (url && /^https?:\/\//i.test(url)) {
+      resolved = url;
+    } else if (url && url.startsWith('data:')) {
+      resolved = url;
+    } else if (url) {
+      resolved = "https://" + url;
+    }
+
     const response = await fetch(resolved, { cache: 'no-store' });
     if(!response.ok) throw new Error('No se pudo descargar');
     const blob = await response.blob();
@@ -1183,19 +1193,22 @@ async function downloadDocument(url, fileName){
     document.body.removeChild(link);
     setTimeout(()=> URL.revokeObjectURL(blobUrl), 1500);
   } catch (e) {
-    const fallbackLink = document.createElement('a');
-    fallbackLink.href = resolved;
-    fallbackLink.download = fileName || 'documento.pdf';
-    fallbackLink.style.display = 'none';
-    document.body.appendChild(fallbackLink);
-    fallbackLink.click();
-    document.body.removeChild(fallbackLink);
+    const fallbackUrl = dataUrl || url;
+    if (fallbackUrl) {
+      const fallbackLink = document.createElement('a');
+      fallbackLink.href = fallbackUrl;
+      fallbackLink.download = fileName || 'documento.pdf';
+      fallbackLink.style.display = 'none';
+      document.body.appendChild(fallbackLink);
+      fallbackLink.click();
+      document.body.removeChild(fallbackLink);
+    }
   }
 }
 
-function openDocumentUrl(url, fileName){
-  if(!url) return;
-  return downloadDocument(url, fileName || 'documento.pdf');
+function openDocumentUrl(url, fileName, dataUrl){
+  if(!url && !dataUrl) return;
+  return downloadDocument(url, fileName || 'documento.pdf', dataUrl);
 }
 
 function renderDetalle(){
@@ -1239,7 +1252,7 @@ function renderDetalle(){
       docsHtml += `<div class="doc-row">
         <i class="ti ti-file-text doc-icon"></i>
         <div class="doc-info">
-          <div class="doc-name"><a href="${docHref}" data-doc-url="${docHref}">${d.nombre}</a></div>
+          <div class="doc-name"><button type="button" class="doc-link-btn" data-doc-url="${d.url || ''}" data-doc-data-url="${d.dataUrl || ''}" style="background:none;border:none;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer;">${d.nombre}</button></div>
           <div class="doc-cat">${d.categoria}</div>
         </div>
         <i class="ti ti-trash del-btn" data-docid="${d.id}"></i>
@@ -1306,7 +1319,11 @@ function renderDetalle(){
   document.getElementById("mergeDocsBtn").addEventListener("click", ()=> openMergeModal(m.id));
   content.querySelectorAll('.doc-link-btn').forEach(button=>{
     button.addEventListener('click', ()=>{
-      openDocumentUrl(button.getAttribute('data-doc-url'), button.textContent.trim() + '.pdf');
+      openDocumentUrl(
+        button.getAttribute('data-doc-url'),
+        button.textContent.trim() + '.pdf',
+        button.getAttribute('data-doc-data-url')
+      );
     });
   });
   function animateAndRemove(rowEl, cb, msg){
