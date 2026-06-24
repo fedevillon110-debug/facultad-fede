@@ -1,7 +1,7 @@
 {
   "name": "Mi Facultad",
   "short_name": "Mi Facultad",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#15151a",
   "theme_color": "#15151a",

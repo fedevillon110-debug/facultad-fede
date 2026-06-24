@@ -1,0 +1,30 @@
+{
+  "name": "mi-facultad-app",
+  "version": "1.0.0",
+  "description": "Aplicación de escritorio para Mi Facultad",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --publish never"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.mifacultad.app",
+    "productName": "Mi Facultad",
+    "files": [
+      "**/*",
+      "!node_modules/**",
+      "!dist/**"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "icon-512.png"
+    }
+  }
+}

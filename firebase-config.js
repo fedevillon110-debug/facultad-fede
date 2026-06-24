@@ -198,6 +198,15 @@ function looksLikePdfFile(file) {
   return type === "application/pdf" || type === "application/octet-stream" && name.endsWith(".pdf") || name.endsWith(".pdf");
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+}
+
 window.uploadFile = async function (file) {
   if (!file) throw new Error("No file provided");
   if (!looksLikePdfFile(file)) {
@@ -219,20 +228,17 @@ window.uploadFile = async function (file) {
     }
   };
 
+  const dataUrl = await readFileAsDataUrl(file);
+
   try {
     await initFirebase();
     if (!firebaseReady || !window.firebaseStorage) throw new Error("Firebase unavailable");
     const ref = storageRef(window.firebaseStorage, path);
     await withTimeout(uploadBytes(ref, file));
     const url = await withTimeout(getDownloadURL(ref));
-    return { path, url, name: file.name };
+    return { path, url, name: file.name, dataUrl, fallback: false };
   } catch (e) {
-    try {
-      const url = URL.createObjectURL(file);
-      return { path, url, name: file.name, fallback: true };
-    } catch (fallbackError) {
-      throw new Error("No se pudo subir el archivo");
-    }
+    return { path, url: dataUrl, name: file.name, dataUrl, fallback: true };
   }
 };
 
@@ -243,5 +249,3 @@ if (document.getElementById("legajoValue")) {
   document.getElementById("legajoValue").textContent = window.currentUserCode;
 }
 window.dispatchEvent(new Event("storage-ready"));
-
-
